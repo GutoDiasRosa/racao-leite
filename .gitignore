@@ -1,0 +1,10 @@
+# ambiente Python e caches
+.venv/
+__pycache__/
+.pytest_cache/
+
+# projeto salvo automaticamente pelo app (muda a cada clique; cada um tem o seu)
+dados/projeto.json
+
+# configuração local do Claude (caminhos desta máquina)
+.claude/
