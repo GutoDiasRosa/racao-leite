@@ -37,3 +37,23 @@ def test_tentativa_reage_a_edicao():
     assert at.session_state["projeto"]["tentativa"]["racao"]["Farelo de soja"] == 4.5
     at.button[0].click().run()   # Salvar tentativa
     assert len(at.session_state["projeto"]["tentativa"]["historico"]) == 1
+
+
+def test_online_nao_le_nem_grava_arquivo(tmp_path, monkeypatch):
+    """Sem Host localhost (como num servidor público), o arquivo compartilhado é ignorado."""
+    monkeypatch.delenv("RACAO_AUTOSAVE", raising=False)
+    arquivo = tmp_path / "projeto.json"
+    arquivo.write_text('{"animal": {"n_vacas": 999}}', encoding="utf-8")
+    at = AppTest.from_file(str(RAIZ / "app.py"), default_timeout=60)
+    at.run()
+    assert not at.exception
+    assert at.session_state["projeto"]["animal"]["n_vacas"] != 999
+    assert arquivo.read_text(encoding="utf-8") == '{"animal": {"n_vacas": 999}}'
+
+
+def test_autosave_forcado_grava_arquivo(tmp_path, monkeypatch):
+    monkeypatch.setenv("RACAO_AUTOSAVE", "1")
+    at = AppTest.from_file(str(RAIZ / "app.py"), default_timeout=60)
+    at.run()
+    assert not at.exception
+    assert (tmp_path / "projeto.json").exists()

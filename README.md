@@ -23,6 +23,7 @@ da área), **cada tela do app**, **as contas** por trás de cada uma e **como o 
 9. [Dados, arquivos e persistência](#9-dados-arquivos-e-persistência)
 10. [Como mudar ou estender](#10-como-mudar-ou-estender)
 11. [Limitações e cuidados](#11-limitações-e-cuidados)
+12. [Publicar na internet](#12-publicar-na-internet)
 
 ---
 
@@ -341,6 +342,10 @@ racao-leite/
 - **Autosave**: tudo vai para `dados/projeto.json` a cada alteração. Ao reabrir o app, continua de onde
   parou. (Dá para apontar outro arquivo com a variável de ambiente `RACAO_PROJETO` — os testes usam isso
   para não sujar seus dados.)
+- **Autosave só no próprio computador**: o arquivo só é lido/gravado quando o app é aberto por
+  `localhost` (`estado.autosave_ativo()`). Num servidor público todos os visitantes dividiriam o mesmo
+  arquivo; lá cada um trabalha na própria sessão e guarda o trabalho com **Baixar projeto**. A variável
+  `RACAO_AUTOSAVE=1` (ou `0`) força ligar (ou desligar).
 - **Baixar / Abrir projeto (.json)** — barra lateral: o arquivo contém o projeto **inteiro** (animal,
   alimentos, aditivos, as três rações, silo, título do relatório). Serve para backup, comparar cenários ou
   passar para um colega. **Abrir substitui tudo**; baixe o atual antes, se quiser guardá-lo.
@@ -378,3 +383,32 @@ Depois de qualquer mudança: `.venv\Scripts\python -m pytest -q`.
 - **A estimativa NRC** da primeira tela é simplificada e só cobre energia e IMS (não estima proteína).
 - **Ferramenta didática**: segue o modelo do trabalho (exigências em PB e NDT). Não substitui um
   nutricionista nem softwares profissionais para formular dietas de rebanhos reais.
+
+---
+
+## 12. Publicar na internet
+
+O jeito mais simples é o **Streamlit Community Cloud** (gratuito, feito para apps Streamlit). A Vercel
+não serve bem: ela roda funções de vida curta, e o Streamlit precisa de um servidor sempre ligado com a
+conexão de cada usuário aberta.
+
+1. Envie o código para o GitHub (`git push`). O `.gitignore` já deixa de fora o `.venv/` e o
+   `dados/projeto.json`.
+2. Entre em https://share.streamlit.io com a conta do GitHub e clique em **Create app** →
+   **Deploy a public app from GitHub**.
+3. Escolha o repositório, o branch `main` e o arquivo principal `app.py`.
+4. Em **Advanced settings**, escolha **Python 3.12** (a mesma versão usada aqui).
+5. Clique em **Deploy**. O site instala o `requirements.txt` sozinho e fica em
+   `https://<nome-escolhido>.streamlit.app`.
+
+A cada `git push` no `main`, o app online se atualiza sozinho.
+
+**O que muda na versão online:**
+
+- **Nada fica salvo no servidor.** Cada visitante começa com o exemplo do trabalho e perde as edições ao
+  fechar ou recarregar a página. Para guardar, use **Baixar projeto (.json)** na barra lateral; para
+  continuar depois, **Abrir projeto (.json)**. A barra lateral avisa isso.
+- **O app "dorme"** depois de alguns dias sem acesso; quem abrir vê um botão para acordá-lo (leva uns
+  segundos).
+- Se o repositório for **privado**, o app também pode ser privado: nas configurações do app, em
+  **Sharing**, convide quem pode abrir.

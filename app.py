@@ -38,7 +38,11 @@ with st.sidebar:
     )
     st.divider()
     st.markdown("### Projeto")
-    st.caption("Salvo automaticamente em `dados/projeto.json`.")
+    if estado.autosave_ativo():
+        st.caption("Salvo automaticamente em `dados/projeto.json`.")
+    else:
+        st.caption("Versão online: nada fica salvo no servidor. **Baixe o projeto** para guardar o "
+                   "trabalho e abra o arquivo depois para continuar.")
     st.download_button("⬇️ Baixar projeto (.json)", estado.para_json(), file_name="projeto_racao.json",
                        mime="application/json", width="stretch")
     arq = st.file_uploader("Abrir projeto (.json)", type=["json"], key="upload_projeto")

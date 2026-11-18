@@ -67,10 +67,27 @@ def _completar(dados: dict) -> dict:
     return dados
 
 
+def autosave_ativo() -> bool:
+    """Lê/grava `ARQUIVO` só quando o app é aberto no próprio computador (localhost).
+
+    Num servidor público (ex.: Streamlit Community Cloud) todos os visitantes dividiriam o mesmo
+    arquivo — um veria as edições do outro. Lá cada um fica só com a própria sessão e usa os botões
+    de baixar/abrir .json. A variável de ambiente RACAO_AUTOSAVE=1 (ou 0) força ligar (ou desligar).
+    """
+    forcado = os.environ.get("RACAO_AUTOSAVE", "").strip().lower()
+    if forcado in ("1", "true", "sim", "on"):
+        return True
+    if forcado in ("0", "false", "nao", "não", "off"):
+        return False
+    host = (st.context.headers.get("Host") or "").strip().lower()
+    host = host[1:host.find("]")] if host.startswith("[") else host.rsplit(":", 1)[0]
+    return host in ("localhost", "127.0.0.1", "::1")
+
+
 def projeto() -> dict:
     if "projeto" not in st.session_state:
         dados = None
-        if ARQUIVO.exists():
+        if autosave_ativo() and ARQUIVO.exists():
             try:
                 dados = json.loads(ARQUIVO.read_text(encoding="utf-8"))
             except (OSError, ValueError):
@@ -92,6 +109,8 @@ def _json_default(o):
 
 
 def salvar() -> None:
+    if not autosave_ativo():
+        return
     texto = para_json()
     if st.session_state.get("_ultimo_salvo") == texto:
         return
